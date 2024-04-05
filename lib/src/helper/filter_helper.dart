@@ -3,8 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 
-typedef SetFilterPopupHandler = void Function(
-    PlutoGridStateManager? stateManager);
+import '../ui/columns/pluto_column_title.dart';
+
+typedef SetFilterPopupHandler = void Function(PlutoGridStateManager? stateManager);
 
 class FilterHelper {
   /// A value to identify all column searches when searching filters.
@@ -41,10 +42,8 @@ class FilterHelper {
   }) {
     return PlutoRow(
       cells: {
-        filterFieldColumn:
-            PlutoCell(value: columnField ?? filterFieldAllColumns),
-        filterFieldType:
-            PlutoCell(value: filterType ?? const PlutoFilterTypeContains()),
+        filterFieldColumn: PlutoCell(value: columnField ?? filterFieldAllColumns),
+        filterFieldType: PlutoCell(value: filterType ?? const PlutoFilterTypeContains()),
         filterFieldValue: PlutoCell(value: filterValue ?? ''),
       },
     );
@@ -97,8 +96,7 @@ class FilterHelper {
               flag,
               compareByFilterType(
                 filterType: filterType!,
-                base: row!.cells[e.cells[filterFieldColumn]!.value]!.value
-                    .toString(),
+                base: row!.cells[e.cells[filterFieldColumn]!.value]!.value.toString(),
                 search: e.cells[filterFieldValue]!.value.toString(),
                 column: foundColumn,
               ),
@@ -139,9 +137,7 @@ class FilterHelper {
         columnField = allField;
       }
 
-      final String filterType =
-          (row.cells[FilterHelper.filterFieldType]!.value as PlutoFilterType)
-              .title;
+      final String filterType = (row.cells[FilterHelper.filterFieldType]!.value as PlutoFilterType).title;
 
       final filterValue = row.cells[FilterHelper.filterFieldValue]!.value;
 
@@ -171,8 +167,7 @@ class FilterHelper {
     }
 
     for (var row in filteredRows) {
-      if (row!.cells[filterFieldColumn]!.value == filterFieldAllColumns ||
-          row.cells[filterFieldColumn]!.value == column.field) {
+      if (row!.cells[filterFieldColumn]!.value == filterFieldAllColumns || row.cells[filterFieldColumn]!.value == column.field) {
         return true;
       }
     }
@@ -447,8 +442,7 @@ class FilterPopupState {
     required List<PlutoColumn> columns,
   }) {
     Map<String, String> columnMap = {
-      FilterHelper.filterFieldAllColumns:
-          configuration.localeText.filterAllColumns,
+      FilterHelper.filterFieldAllColumns: configuration.localeText.filterAllColumns,
     };
 
     columns.where((element) => element.enableFilterMenuItem).forEach((element) {
@@ -504,11 +498,11 @@ class PlutoGridFilterPopupHeader extends StatelessWidget {
   final SetFilterPopupHandler? handleAddNewFilter;
 
   const PlutoGridFilterPopupHeader({
-    super.key,
+    Key? key,
     this.stateManager,
     this.configuration,
     this.handleAddNewFilter,
-  });
+  }) : super(key: key);
 
   void handleAddButton() {
     handleAddNewFilter!(stateManager);
@@ -523,36 +517,54 @@ class PlutoGridFilterPopupHeader extends StatelessWidget {
   }
 
   void handleClearButton() {
-    if (stateManager!.rows.isEmpty) {
-      Navigator.of(stateManager!.gridFocusNode.context!).pop();
-    } else {
-      stateManager!.removeRows(stateManager!.rows);
-    }
+    stateManager!.removeRows(stateManager!.rows);
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+    Size size = MediaQuery.sizeOf(context);
+    return SizedBox(
+      width: size.width,
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            color: configuration!.style.iconColor,
-            iconSize: configuration!.style.iconSize,
-            onPressed: handleAddButton,
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.add),
+                color: configuration!.style.iconColor,
+                iconSize: configuration!.style.iconSize,
+                onPressed: handleAddButton,
+              ),
+              IconButton(
+                icon: const Icon(Icons.remove),
+                color: configuration!.style.iconColor,
+                iconSize: configuration!.style.iconSize,
+                onPressed: handleRemoveButton,
+              ),
+              InkWell(
+                onTap: handleClearButton,
+                child: const Text(
+                  'Clear Filter',
+                  style: TextStyle(color: Colors.blue),
+                ),
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.remove),
-            color: configuration!.style.iconColor,
-            iconSize: configuration!.style.iconSize,
-            onPressed: handleRemoveButton,
+          const SizedBox(
+            width: 370,
           ),
-          IconButton(
-            icon: const Icon(Icons.clear_sharp),
-            color: Colors.red,
-            iconSize: configuration!.style.iconSize,
-            onPressed: handleClearButton,
+          ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+            ),
+            onPressed: () {
+              Navigator.of(stateManager!.gridFocusNode.context!).pop();
+              isFiltered = false;
+            },
+            child: const Text(
+              'Close',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),

@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
+        useMaterial3: false,
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(),
@@ -105,8 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void exportToCsv() async {
     String title = "pluto_grid_export";
 
-    var exported = const Utf8Encoder()
-        .convert(pluto_grid_export.PlutoGridExport.exportCSV(stateManager));
+    var exported = const Utf8Encoder().convert(pluto_grid_export.PlutoGridExport.exportCSV(stateManager));
 
     // use file_saver from pub.dev
     await FileSaver.instance.saveFile("$title.csv", exported, ".csv");
